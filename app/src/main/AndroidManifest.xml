@@ -25,6 +25,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.hyunju.marketapp.home.AddArticleActivity"/>
+        <activity android:name="com.hyunju.marketapp.chatdetail.ChatRoomActivity"/>
     </application>
 
 </manifest>
