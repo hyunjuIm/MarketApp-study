@@ -5,11 +5,11 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
 
     <application
+        android:name=".MarketApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -20,6 +20,9 @@
         android:theme="@style/Theme.MarketApp"
         tools:targetApi="31">
         <activity
+            android:name=".gallery.GalleryActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -28,11 +31,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.hyunju.marketapp.home.AddArticleActivity" />
-        <activity android:name="com.hyunju.marketapp.chatdetail.ChatRoomActivity" />
-
-        <activity android:name="com.hyunju.marketapp.photo.CameraActivity" />
-        <activity android:name="com.hyunju.marketapp.photo.ImagePreviewListActivity" />
+        <activity android:name=".home.AddArticleActivity" />
+        <activity android:name=".chatdetail.ChatRoomActivity" />
+        <activity android:name=".photo.CameraActivity" />
+        <activity android:name=".photo.ImagePreviewListActivity" />
     </application>
 
 </manifest>

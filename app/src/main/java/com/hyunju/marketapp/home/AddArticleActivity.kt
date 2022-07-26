@@ -20,6 +20,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import com.hyunju.marketapp.DBKey.Companion.DB_ARTICLES
 import com.hyunju.marketapp.databinding.ActivityAddArticleBinding
+import com.hyunju.marketapp.gallery.GalleryActivity
 import com.hyunju.marketapp.photo.CameraActivity
 import com.hyunju.marketapp.photo.PhotoListAdapter
 import kotlinx.coroutines.*
@@ -172,10 +173,10 @@ class AddArticleActivity : AppCompatActivity() {
     }
 
     private fun startGalleryScreen() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.type = "image/*"
-        startActivityForResult(intent, GALLERY_REQUEST_CODE)
-
+        startActivityForResult(
+            GalleryActivity.newIntent(this),
+            GALLERY_REQUEST_CODE
+        )
     }
 
     private fun startCameraScreen() {
@@ -202,11 +203,13 @@ class AddArticleActivity : AppCompatActivity() {
 
         when (requestCode) {
             GALLERY_REQUEST_CODE -> {
-                val uri = data?.data
-                if (uri != null) {
-                    imageUriList.add(uri)
-                    photoListAdapter.setPhotoList(imageUriList)
-                } else {
+                data?.let { intent ->
+                    val uriList = intent.getParcelableArrayListExtra<Uri>(URI_LIST_KEY)
+                    uriList?.let { list ->
+                        imageUriList.addAll(list)
+                        photoListAdapter.setPhotoList(imageUriList)
+                    }
+                } ?: kotlin.run {
                     Toast.makeText(this, "사진을 가져오지 못했습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -217,6 +220,8 @@ class AddArticleActivity : AppCompatActivity() {
                         imageUriList.addAll(list)
                         photoListAdapter.setPhotoList(imageUriList)
                     }
+                } ?: kotlin.run {
+                    Toast.makeText(this, "사진을 가져오지 못했습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
             else -> {
