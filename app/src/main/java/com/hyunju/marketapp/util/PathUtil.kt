@@ -1,4 +1,4 @@
-package com.hyunju.cameraapp.util
+package com.hyunju.marketapp.util
 
 import android.annotation.TargetApi
 import android.app.Activity
@@ -10,7 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-import com.hyunju.cameraapp.R
+import com.hyunju.marketapp.R
 import java.io.File
 import java.io.FileOutputStream
 

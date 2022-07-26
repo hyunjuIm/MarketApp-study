@@ -8,15 +8,18 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
-import com.hyunju.cameraapp.util.PathUtil
+import com.hyunju.marketapp.util.PathUtil
 import com.hyunju.marketapp.R
 import com.hyunju.marketapp.databinding.ActivityImagePreviewListBinding
 import java.io.File
 import java.io.FileNotFoundException
 
 class ImagePreviewListActivity : AppCompatActivity() {
+
     companion object {
-        private const val URI_LIST_KEY = "uriList"
+        const val URI_LIST_KEY = "uriList"
+
+        const val IMAGE_LIST_REQUEST_CODE = 100
 
         fun newIntent(activity: Activity, uriList: List<Uri>) =
             Intent(activity, ImagePreviewListActivity::class.java).apply {
@@ -25,24 +28,22 @@ class ImagePreviewListActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityImagePreviewListBinding
-    private lateinit var imageViewPagerAdapter: ImageViewPagerAdapter
-
     private val uriList by lazy<List<Uri>> { intent.getParcelableArrayListExtra(URI_LIST_KEY)!! }
+    private lateinit var imageViewPagerAdapter: ImageViewPagerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityImagePreviewListBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         initViews()
     }
 
     private fun initViews() {
         setSupportActionBar(binding.toolbar)
-        setUpImageList()
+        setupImageList(uriList)
     }
 
-    private fun setUpImageList() = with(binding) {
+    private fun setupImageList(uriList: List<Uri>) = with(binding) {
         if (::imageViewPagerAdapter.isInitialized.not()) {
             imageViewPagerAdapter = ImageViewPagerAdapter(uriList)
         }
@@ -58,31 +59,31 @@ class ImagePreviewListActivity : AppCompatActivity() {
                 )
             }
         })
-
-        binding.deleteButton.setOnClickListener {
+        deleteButton.setOnClickListener {
             removeImage(uriList[imageViewPager.currentItem])
+        }
+        confirmButton.setOnClickListener {
+            setResult(Activity.RESULT_OK, Intent().apply {
+                putExtra(URI_LIST_KEY, ArrayList<Uri>().apply { imageViewPagerAdapter.uriList.forEach { add(it) } })
+            })
+            finish()
         }
     }
 
     private fun removeImage(uri: Uri) {
-        try {
-            val file = File(PathUtil.getPath(this, uri) ?: throw FileNotFoundException())
-            file.delete()
-            imageViewPagerAdapter.uriList.let {
-                val imageList = it.toMutableList()
-                imageList.remove(uri)
-                imageViewPagerAdapter.uriList = imageList
-                imageViewPagerAdapter.notifyDataSetChanged()
-            }
-            MediaScannerConnection.scanFile(this, arrayOf(file.path), arrayOf("image/jpeg"), null)
-            binding.indicator.setViewPager(binding.imageViewPager)
-            if (imageViewPagerAdapter.uriList.isEmpty()) {
-                Toast.makeText(this, "이미지가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
-                finish()
-            }
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-            Toast.makeText(this, "이미지가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
+        val file = File(PathUtil.getPath(this, uri) ?: throw FileNotFoundException())
+        file.delete()
+        imageViewPagerAdapter.uriList.let {
+            val imageList = it.toMutableList()
+            imageList.remove(uri)
+            imageViewPagerAdapter.uriList = imageList
+            imageViewPagerAdapter.notifyDataSetChanged()
+        }
+        binding.indicator.setViewPager(binding.imageViewPager)
+        MediaScannerConnection.scanFile(this, arrayOf(file.path), arrayOf("image/jpeg"), null)
+        if (imageViewPagerAdapter.uriList.isEmpty()) {
+            Toast.makeText(this, "삭제할 수 있는 이미지가 없습니다.", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 

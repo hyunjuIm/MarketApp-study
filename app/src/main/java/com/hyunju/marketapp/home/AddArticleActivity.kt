@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -19,8 +20,17 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import com.hyunju.marketapp.DBKey.Companion.DB_ARTICLES
 import com.hyunju.marketapp.databinding.ActivityAddArticleBinding
+import com.hyunju.marketapp.photo.CameraActivity
 
 class AddArticleActivity : AppCompatActivity() {
+
+    companion object {
+        const val PERMISSION_REQUEST_CODE = 1000
+        const val GALLERY_REQUEST_CODE = 1001
+        const val CAMERA_REQUEST_CODE = 1002
+
+        const val URI_LIST_KEY = "uriList"
+    }
 
     private var selectedUri: Uri? = null
     private val auth: FirebaseAuth by lazy {
@@ -114,7 +124,7 @@ class AddArticleActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         when (requestCode) {
-            1010 ->
+            PERMISSION_REQUEST_CODE ->
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startGalleryScreen()
                 } else {
@@ -126,12 +136,15 @@ class AddArticleActivity : AppCompatActivity() {
     private fun startGalleryScreen() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
-        startActivityForResult(intent, 2020)
+        startActivityForResult(intent, GALLERY_REQUEST_CODE)
 
     }
 
     private fun startCameraScreen() {
-
+        startActivityForResult(
+            CameraActivity.newIntent(this),
+            CAMERA_REQUEST_CODE
+        )
     }
 
     private fun showProgress() {
@@ -150,13 +163,21 @@ class AddArticleActivity : AppCompatActivity() {
         }
 
         when (requestCode) {
-            2020 -> {
+            GALLERY_REQUEST_CODE -> {
                 val uri = data?.data
                 if (uri != null) {
                     binding.photoImageView.setImageURI(uri)
                     selectedUri = uri
                 } else {
                     Toast.makeText(this, "사진을 가져오지 못했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            CAMERA_REQUEST_CODE -> {
+                data?.let { intent ->
+                    val uriList = intent.getParcelableArrayListExtra<Uri>(URI_LIST_KEY)
+                    uriList?.let { list ->
+
+                    }
                 }
             }
             else -> {
@@ -170,7 +191,10 @@ class AddArticleActivity : AppCompatActivity() {
             .setTitle("권한이 필요합니다.")
             .setMessage("사진을 가져오기 위해 필요합니다.")
             .setPositiveButton("동의") { _, _ ->
-                requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1010)
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                    PERMISSION_REQUEST_CODE
+                )
             }
             .create()
             .show()
@@ -189,7 +213,7 @@ class AddArticleActivity : AppCompatActivity() {
             else -> {
                 requestPermissions(
                     arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
-                    1010
+                    PERMISSION_REQUEST_CODE
                 )
             }
         }

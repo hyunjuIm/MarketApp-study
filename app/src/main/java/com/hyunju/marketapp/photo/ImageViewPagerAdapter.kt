@@ -12,8 +12,7 @@ class ImageViewPagerAdapter(
 ) : RecyclerView.Adapter<ImageViewPagerAdapter.ImageViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-        val binding =
-            ViewholderImageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ViewholderImageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ImageViewHolder(binding)
     }
 
@@ -26,9 +25,10 @@ class ImageViewPagerAdapter(
     class ImageViewHolder(
         private val binding: ViewholderImageBinding
     ) : RecyclerView.ViewHolder(binding.root) {
+
         fun bindData(uri: Uri) = with(binding) {
             imageView.loadCenterCrop(uri.toString())
         }
-    }
 
+    }
 }
