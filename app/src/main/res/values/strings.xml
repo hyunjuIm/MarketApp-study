@@ -11,4 +11,5 @@
 
     <string name="images_page">(%d/%d)</string>
     <string name="confirm">확인</string>
+    <string name="add_image">이미지 등록하기</string>
 </resources>
