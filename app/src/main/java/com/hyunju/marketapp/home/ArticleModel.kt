@@ -1,7 +1,7 @@
 package com.hyunju.marketapp.home
 
 data class ArticleModel(
-    val sellerId: String,
+    val userId: String,
     val title: String,
     val createdAt: Long,
     val content: String,
