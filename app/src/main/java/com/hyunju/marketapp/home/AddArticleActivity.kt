@@ -18,7 +18,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import com.hyunju.marketapp.DBKey.Companion.DB_ARTICLES
-import com.hyunju.marketapp.R
+import com.hyunju.marketapp.databinding.ActivityAddArticleBinding
 
 class AddArticleActivity : AppCompatActivity() {
 
@@ -35,30 +35,24 @@ class AddArticleActivity : AppCompatActivity() {
         Firebase.database.reference.child(DB_ARTICLES)
     }
 
+    private lateinit var binding: ActivityAddArticleBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add_article)
+        binding = ActivityAddArticleBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        findViewById<Button>(R.id.imageAddButton).setOnClickListener {
-            when {
-                ContextCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    startContentProvider()
-                }
-                shouldShowRequestPermissionRationale(android.Manifest.permission.READ_EXTERNAL_STORAGE) -> {
-                    showPermissionContextPopup()
-                }
-                else -> {
-                    requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1010)
-                }
-            }
+        initViews()
+    }
+
+    private fun initViews() = with(binding) {
+        imageAddButton.setOnClickListener {
+            showPictureUploadDialog()
         }
 
-        findViewById<Button>(R.id.submitButton).setOnClickListener {
-            val title = findViewById<EditText>(R.id.titleEditText).text.toString()
-            val content = findViewById<EditText>(R.id.contentEditText).text.toString()
+        submitButton.setOnClickListener {
+            val title = binding.titleEditText.text.toString()
+            val content = binding.contentEditText.text.toString()
             val sellerId = auth.currentUser?.uid.orEmpty()
 
             showProgress()
@@ -71,7 +65,11 @@ class AddArticleActivity : AppCompatActivity() {
                         uploadArticle(sellerId, title, content, uri)
                     },
                     errorHandler = {
-                        Toast.makeText(this, "사진 업로드에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@AddArticleActivity,
+                            "사진 업로드에 실패했습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         hideProgress()
                     }
                 )
@@ -108,32 +106,40 @@ class AddArticleActivity : AppCompatActivity() {
         finish()
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         when (requestCode) {
             1010 ->
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startContentProvider()
+                    startGalleryScreen()
                 } else {
                     Toast.makeText(this, "권한을 거부하셨습니다.", Toast.LENGTH_SHORT).show()
                 }
         }
     }
 
-    private fun startContentProvider() {
+    private fun startGalleryScreen() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
         startActivityForResult(intent, 2020)
 
     }
 
+    private fun startCameraScreen() {
+
+    }
+
     private fun showProgress() {
-        findViewById<ProgressBar>(R.id.progressBar).isVisible = true
+        binding.progressBar.isVisible = true
     }
 
     private fun hideProgress() {
-        findViewById<ProgressBar>(R.id.progressBar).isVisible = false
+        binding.progressBar.isVisible = false
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -147,7 +153,7 @@ class AddArticleActivity : AppCompatActivity() {
             2020 -> {
                 val uri = data?.data
                 if (uri != null) {
-                    findViewById<ImageView>(R.id.photoImageView).setImageURI(uri)
+                    binding.photoImageView.setImageURI(uri)
                     selectedUri = uri
                 } else {
                     Toast.makeText(this, "사진을 가져오지 못했습니다.", Toast.LENGTH_SHORT).show()
@@ -168,7 +174,43 @@ class AddArticleActivity : AppCompatActivity() {
             }
             .create()
             .show()
+    }
 
+    private fun checkExternalStoragePermission(uploadAction: () -> Unit) {
+        when {
+            ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                uploadAction()
+            }
+            shouldShowRequestPermissionRationale(android.Manifest.permission.READ_EXTERNAL_STORAGE) -> {
+                showPermissionContextPopup()
+            }
+            else -> {
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                    1010
+                )
+            }
+        }
+    }
+
+    private fun showPictureUploadDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("사진 첨부")
+            .setMessage("사진 첨부할 방식을 선택해주세요.")
+            .setPositiveButton("카메라") { _, _ ->
+                checkExternalStoragePermission {
+                    startCameraScreen()
+                }
+            }
+            .setNegativeButton("갤러리") { _, _ ->
+                checkExternalStoragePermission {
+                    startGalleryScreen()
+                }
+            }
+            .create()
+            .show()
     }
 
 }
