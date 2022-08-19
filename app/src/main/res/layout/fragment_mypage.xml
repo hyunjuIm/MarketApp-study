@@ -30,7 +30,7 @@
         android:layout_marginEnd="10dp"
         android:backgroundTint="@color/orange"
         android:enabled="false"
-        android:text="회원가입"
+        android:text="@string/join"
         app:layout_constraintTop_toBottomOf="@id/passwordEditText"
         app:layout_constraintEnd_toStartOf="@id/signInOutButton" />
 
@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="@color/orange"
         android:enabled="false"
-        android:text="로그인"
+        android:text="@string/login"
         app:layout_constraintTop_toBottomOf="@id/passwordEditText"
         app:layout_constraintEnd_toEndOf="@id/passwordEditText" />
 

@@ -39,7 +39,7 @@
         android:id="@+id/captureButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="촬영"
+        android:text="@string/filming"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
